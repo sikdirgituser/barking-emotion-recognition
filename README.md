@@ -22,3 +22,19 @@ If you need other packages, make sure to add them to the requirements.txt file w
 `
 
 ## files
+
+### preprocessing
+
+- _dataset_preprocessing.py_: Download current state of labels from sheets, compare and write identic labels to `data/dataset.csv`
+- _audioset_download.py_: Download and cut the corresponding audio files, save to `data/audioset_audios/`
+- _audio_preprocessing.py_: Helper functions to generate (mel-)spectrograms of same shape from audio files
+
+### modelling
+
+- _model_playfulness.py_: first approach of a model predicting if barking is playful or not.
+- ...
+
+### deployment
+
+- Models should be saved to `/models`, presumably as `.keras`-file
+- _server.py_: boilerplate to deploy the model(s) into a simple API through flask
