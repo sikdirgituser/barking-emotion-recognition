@@ -1,4 +1,6 @@
 # Function to generate spectrogram as feature
+from random import randint
+
 import librosa
 import numpy as np
 import pandas as pd
@@ -42,14 +44,14 @@ def generate_mel_spectrogram(file_path, target_sample_length = 220500):
         print(f"Error processing {file_path}: {e}")
         return None
 
-if __name__ == '__main__':
+def spectrogram_exporter(n = 10):
     """
     This is just a helper script to generate some spectrograms to manually inspect.
     """
     df = pd.read_csv('data/dataset.csv')
 
     for i, row in df.iterrows():
-        if i > 10:
+        if i > n:
             break
 
         audio_path = f"data/audioset_audios/{row['ytid']}_cut.mp3"
@@ -81,5 +83,31 @@ if __name__ == '__main__':
         fig.colorbar(img, ax=ax, format=f'%0.2f')
         plt.savefig(f"data/spectrograms/{row['ytid']}-{row['label']}_mel-spec.png")
         plt.show()
+
+def random_frequency_mask(spectrogram, n_freq_masks=1, freq_mask_max_width=10):
+
+    # Apply frequency masks
+    for _ in range(n_freq_masks):
+        # Randomly choose the frequency mask parameters
+        mask_width = randint(1, freq_mask_max_width + 1)
+        mask_start = randint(0, spectrogram.shape[0] - mask_width + 1)
+
+        # Apply the frequency mask
+        spectrogram[mask_start:mask_start + mask_width, :] = 0
+
+    return spectrogram
+
+if __name__ == '__main__':
+
+    spec = generate_spectrogram('data/audioset_audios/cmlCMTqhOvI_cut.mp3')
+    print(spec.shape)
+
+    spec_aug = random_frequency_mask(spec)
+    print(spec_aug.shape)
+
+    print(spec_aug == spec)
+
+
+
 
 
