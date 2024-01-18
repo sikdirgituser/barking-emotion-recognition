@@ -57,9 +57,13 @@ df_labels_same = df_agg[df_agg.label_same == True]
 df_labels_same.loc[:, 'label'] = df_labels_same['label'].apply(lambda x: x.split(' | ')[0])
 
 # plot emotion category count
-print(df_labels_same['label'].value_counts())
+df_labels_same['label'].value_counts().plot(kind='bar', title=f'Examples per category (Total: {df_labels_same.shape[0]})')
+plt.show()
 
 # export as csv
 df_labels_same[['label', 'ytid', 'start', 'stop']].to_csv('data/dataset.csv')
+
+
+
 
 

@@ -1,3 +1,5 @@
+import os
+
 from pytube import YouTube
 from pydub import AudioSegment
 import pandas as pd
@@ -49,8 +51,15 @@ def cut_audio(row, output_path):
     except Exception as e:
         print(f"Fehler beim Verarbeiten von Video {video_id}: {e}")
 
-# download audios
-df.apply(lambda row: download_audio(row, output_path), axis=1)
 
-# cut audios to given duration
-df.apply(lambda row: cut_audio(row, output_path), axis=1)
+def process_audio(row, output_path):
+
+    if os.path.isfile(f"{output_path}/{row['ytid']}_cut.mp3"):
+        print(f"video {row['ytid']} already downloaded, skipping.")
+        return None
+
+    download_audio(row, output_path)
+    cut_audio(row, output_path)
+
+# download & cut audios
+df.apply(lambda row: process_audio(row, output_path), axis=1)

@@ -9,8 +9,8 @@ from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from keras.utils import to_categorical
 from audio_preprocessing import generate_spectrogram, random_frequency_mask
-
-AUGMENTATION_FACTOR = 1
+import seaborn as sns
+from sklearn.utils.class_weight import compute_class_weight
 
 # read dataset
 df = pd.read_csv('data/dataset.csv')
@@ -28,31 +28,20 @@ df = df.dropna(subset=['spectrogram'])
 label_encoder = LabelEncoder()
 df['emotion_label_encoded'] = label_encoder.fit_transform(df['label'])
 
-spectograms = df['spectrogram'].tolist()
-
-# Augment data by random frequency masks, see: https://towardsdatascience.com/audio-deep-learning-made-simple-part-3-data-preparation-and-augmentation-24c6e1f6b52
-augmented_spectograms = []
-for i in range(AUGMENTATION_FACTOR - 1):
-    augmented_spectograms = augmented_spectograms + [random_frequency_mask(spec) for spec in spectograms]
-all_spectograms = augmented_spectograms + spectograms
-
 # Create X (features) and y (labels)
-X = np.array(all_spectograms)
-
-# labels
-labels = (df['label'] == 'Playfulness').tolist()
-
-# Repeat the labels 10 times (9 + 1) to make sure we have same amount as augmented data
-all_labels = np.tile(labels, AUGMENTATION_FACTOR)
-
-# Convert to one-hot encoding using to_categorical
-y = to_categorical(all_labels)
+X = np.array(df['spectrogram'].tolist())
+y = to_categorical(df['emotion_label_encoded'])  # One-hot encode labels
 
 # Split data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # output data-dimensions
 print(f"train model on {X_train.shape[0]} audio-files, test on {X_test.shape[0]}.")
+
+# generate class weights as we have unbalanced data
+y_train_list = y_train.argmax(axis=1).tolist()
+class_weights = compute_class_weight('balanced', classes=np.unique(y_train_list), y=y_train_list)
+class_weights_dict = dict(enumerate(class_weights))
 
 # Build CNN model
 model = Sequential()
@@ -65,34 +54,34 @@ model.add(Dense(128, activation='relu'))
 model.add(Dense(y.shape[1], activation='softmax'))
 
 # Compile the model
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', F1Score()])
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 # Train the model
-model.fit(X_train.reshape((*X_train.shape, 1)), y_train, epochs=10, batch_size=32, validation_split=0.2)
+model.fit(X_train.reshape((*X_train.shape, 1)), y_train, class_weight=class_weights_dict, epochs=10, batch_size=32, validation_split=0.2)
 
 # Evaluate model performance on the test set
 accuracy = model.evaluate(X_test.reshape((*X_test.shape, 1)), y_test)[1]
 print()
 print(f'Accuracy on test-set: {accuracy}')
-print('')
+print()
 
 # make predictions for test data
 y_pred = model.predict(X_test.reshape((*X_test.shape, 1))).round()
 
-# Confusion Matrix
-cm = confusion_matrix(y_test[:,0], y_pred[:,0])
-print("Confusion Matrix:")
-print(cm)
-print()
+# Create confusion matrix
+conf_mat = confusion_matrix(np.argmax(y_test, axis=1), np.argmax(y_pred, axis=1))
+plt.figure(figsize=(10, 7))
+sns.heatmap(conf_mat, annot=True, fmt='d', cmap='Blues',
+            xticklabels=label_encoder.classes_,
+            yticklabels=label_encoder.classes_)
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()
 
 # Classification Report
 print("Classification Report:")
 print(classification_report(y_test[:,0], y_pred[:,0]))
 
-# show confusion matrix
-cm_display = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['playful', 'not playful'])
-cm_display.plot(cmap='Blues')
-plt.show()
-
 # model export
-model.save('models/model_playfulness.keras')
+model.save('models/model_all_categories.keras')
