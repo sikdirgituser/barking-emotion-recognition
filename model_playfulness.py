@@ -8,15 +8,18 @@ from sklearn.preprocessing import LabelEncoder
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from keras.utils import to_categorical
-from audio_preprocessing import generate_spectrogram, random_frequency_mask
+from audio_preprocessing import generate_spectrogram, random_frequency_mask, generate_mel_spectrogram
 
 AUGMENTATION_FACTOR = 1
 
 # read dataset
 df = pd.read_csv('data/dataset.csv')
 
+# remove Neutral
+df = df[df.label.isin(['Happiness', 'Playfulness', 'Aggressiveness', 'Despair', 'Fearfulness'])]
+
 # Apply feature extraction to each audio file
-df['spectrogram'] = df['ytid'].apply(lambda ytid: generate_spectrogram(f'data/audioset_audios/{ytid}_cut.mp3'))
+df['spectrogram'] = df.apply(lambda row: generate_spectrogram(f"data/audioset_audios/{row['ytid']}_{int(row['start'])}_{int(row['stop'])}_cut.mp3"), axis=1)
 
 # show files not found
 print(f"{df['spectrogram'].isna().sum()} entries dropped because no audio file found.")

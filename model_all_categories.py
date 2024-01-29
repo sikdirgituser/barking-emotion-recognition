@@ -15,8 +15,11 @@ from sklearn.utils.class_weight import compute_class_weight
 # read dataset
 df = pd.read_csv('data/dataset.csv')
 
+# choose what to include in the model
+df = df[df.label.isin(['Playfulness', 'Aggressiveness'])]
+
 # Apply feature extraction to each audio file
-df['spectrogram'] = df['ytid'].apply(lambda ytid: generate_spectrogram(f'data/audioset_audios/{ytid}_cut.mp3'))
+df['spectrogram'] = df.apply(lambda row: generate_spectrogram(f"data/audioset_audios/{row['ytid']}_{int(row['start'])}_{int(row['stop'])}_cut.mp3"), axis=1)
 
 # show files not found
 print(f"{df['spectrogram'].isna().sum()} entries dropped because no audio file found.")
