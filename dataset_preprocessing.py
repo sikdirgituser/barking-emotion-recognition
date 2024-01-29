@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load tables from the Google Drive folder
-tabs = ['Kathi', 'Luca', 'Menghan', 'Pascal', 'Vergleich']
+tabs = ['Kathi', 'Luca', 'Menghan', 'Pascal']
 sheet_id = "1MFeAULgteVBXRxSgZZ5z7IDsWI8cSD36zG4DOhfvCVs"
 df_labels = pd.DataFrame()
 
@@ -56,14 +56,24 @@ df_categories_same.loc[:, 'category'] = df_categories_same['labels_category'].ap
 df_labels_same = df_agg[df_agg.label_same == True]
 df_labels_same.loc[:, 'label'] = df_labels_same['label'].apply(lambda x: x.split(' | ')[0])
 
+# add pre-labelled data from special tab
+url = "http://docs.google.com/spreadsheets/d/{}/gviz/tq?tqx=out:csv&sheet={}".format(sheet_id, "pre-labelled")
+print('read {}'.format(url))
+df_pre = pd.read_csv(url).iloc[:, 0:6]
+df_pre.rename(columns={
+    'emotion_label_1': 'label'
+}, inplace=True)
+df_labels_same = pd.concat([df_labels_same, df_pre[['label', 'ytid', 'start', 'stop']]])
+
 # plot emotion category count
-df_labels_same['label'].value_counts().plot(kind='bar', title=f'Examples per category (Total: {df_labels_same.shape[0]})')
+plt.subplots(figsize=(12, 8))
+df_labels_same['label'].value_counts().plot(kind='barh', title=f'Examples per category (Total: {df_labels_same.shape[0]})')
 plt.show()
 
 # export as csv
 df_labels_same[['label', 'ytid', 'start', 'stop']].to_csv('data/dataset.csv')
 
 
-
+print(df_labels_same['label'].value_counts())
 
 

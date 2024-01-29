@@ -60,8 +60,19 @@ df_categories_same.loc[:, 'category'] = df_categories_same['labels_category'].ap
 df_labels_same = df_agg[df_agg.label_same == True]
 df_labels_same.loc[:, 'label'] = df_labels_same['label'].apply(lambda x: x.split(' | ')[0])
 
-# Count the number of data entries in each emotion category after mapping
+# add pre-labelled data from special tab
+url = "http://docs.google.com/spreadsheets/d/{}/gviz/tq?tqx=out:csv&sheet={}".format(sheet_id, "pre-labelled")
+print('read {}'.format(url))
+df_pre = pd.read_csv(url).iloc[:, 0:8]
+df_pre.rename(columns={
+    'emotion_label_1': 'label'
+}, inplace=True)
+df_labels_same = pd.concat([df_labels_same, df_pre[['label', 'ytid', 'start', 'stop']]], ignore_index=True)
+
+# map to category
 df_labels_same.loc[:, 'label'] = df_labels_same['label'].apply(map_to_category)
+
+# Count the number of data entries in each emotion category after mapping
 category_counts = df_labels_same['label'].value_counts()
 
 # Print category counts
@@ -75,4 +86,4 @@ plt.ylabel("Count")
 plt.show()
 
 # export as csv
-df_labels_same[['label', 'ytid', 'start', 'stop']].to_csv('H:/HSLU/3. Semester/COIN/data.csv')
+df_labels_same[['label', 'ytid', 'start', 'stop']].to_csv('data/data.csv')
