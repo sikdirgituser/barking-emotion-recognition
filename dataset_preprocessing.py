@@ -59,11 +59,12 @@ df_labels_same.loc[:, 'label'] = df_labels_same['label'].apply(lambda x: x.split
 # add pre-labelled data from special tab
 url = "http://docs.google.com/spreadsheets/d/{}/gviz/tq?tqx=out:csv&sheet={}".format(sheet_id, "pre-labelled")
 print('read {}'.format(url))
-df_pre = pd.read_csv(url).iloc[:, 0:6]
+df_pre = pd.read_csv(url).iloc[:, 0:8]
 df_pre.rename(columns={
-    'emotion_label_1': 'label'
+    'emotion_label_1': 'label',
+    'emotion_label_2': 'label_2'
 }, inplace=True)
-df_labels_same = pd.concat([df_labels_same, df_pre[['label', 'ytid', 'start', 'stop']]])
+df_labels_same = pd.concat([df_labels_same, df_pre[['label', 'label_2', 'ytid', 'start', 'stop']]])
 
 # plot emotion category count
 plt.subplots(figsize=(12, 8))

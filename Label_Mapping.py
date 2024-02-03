@@ -71,6 +71,7 @@ df_labels_same = pd.concat([df_labels_same, df_pre[['label', 'ytid', 'start', 's
 
 # map to category
 df_labels_same.loc[:, 'label'] = df_labels_same['label'].apply(map_to_category)
+df_labels_same.dropna(subset=['label'], inplace=True)
 
 # Count the number of data entries in each emotion category after mapping
 category_counts = df_labels_same['label'].value_counts()
@@ -80,10 +81,11 @@ print("Emotion Category Counts:")
 print(category_counts)
 
 # Plot emotion category count
-category_counts.plot(kind='bar', title=f'Examples per category (Total: {df_labels_same.shape[0]})')
-plt.xlabel("Emotion Category")
-plt.ylabel("Count")
+plt.subplots(figsize=(12, 8))
+category_counts.plot(kind='barh', title=f'Examples per category (Total: {df_labels_same.shape[0]})')
+plt.ylabel("Emotion Category")
+plt.xlabel("Count")
 plt.show()
 
 # export as csv
-df_labels_same[['label', 'ytid', 'start', 'stop']].to_csv('data/data.csv')
+df_labels_same[['label', 'ytid', 'start', 'stop']].to_csv('data/dataset_2.csv')

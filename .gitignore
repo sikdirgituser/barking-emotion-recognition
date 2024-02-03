@@ -137,3 +137,7 @@ dmypy.json
 
 # mac tings
 .DS_Store
+
+# logs
+logs/*
+!logs/.gitkeep

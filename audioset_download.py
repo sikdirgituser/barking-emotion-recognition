@@ -5,7 +5,7 @@ from pydub import AudioSegment
 import pandas as pd
 
 # read in the dataset
-csv_file_path = 'data/dataset.csv'
+csv_file_path = 'data/dataset_2.csv'
 
 # Read the CSV file into a DataFrame, skipping lines starting with '#'
 df = pd.read_csv(csv_file_path)

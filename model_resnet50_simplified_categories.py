@@ -5,7 +5,7 @@ import keras
 import pandas as pd
 import numpy as np
 from keras.src.applications import ResNet50
-from keras.src.metrics import F1Score
+from keras.src.metrics import F1Score, Recall, Precision, Accuracy
 from matplotlib import pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay, cohen_kappa_score
 from sklearn.model_selection import train_test_split
@@ -17,14 +17,15 @@ from audio_preprocessing import generate_spectrogram, random_frequency_mask
 import seaborn as sns
 from sklearn.utils.class_weight import compute_class_weight
 
+# save console output
 import sys
 sys.stdout = open(f'logs/{os.path.basename(__file__)}-{datetime.now().strftime("%Y%m%d_%H-%M-%S")}.txt', 'w')
 
 # read dataset
-df = pd.read_csv('data/dataset.csv')
+df = pd.read_csv('data/dataset_2.csv')
 
 # choose what to include in the model
-df = df[df.label.isin(['Playfulness', 'Aggressiveness', 'Happiness', 'Despair', 'Fearfulness'])]
+df = df[df.label.isin(['Happy', 'Aggressive', 'Sad'])]
 
 # Apply feature extraction to each audio file
 df['spectrogram'] = df.apply(lambda row: generate_spectrogram(f"data/audioset_audios/{row['ytid']}_{int(row['start'])}_{int(row['stop'])}_cut.mp3"), axis=1)
@@ -73,8 +74,13 @@ resnet_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=
 # Print model summary
 resnet_model.summary()
 
+class stop_training_on_high_accuaracy(keras.callbacks.Callback):
+  def on_epoch_end(self,epoch,logs={}):
+    if(logs['accuracy']>=0.99):
+      self.model.stop_training=True
+
 # Train model
-history = resnet_model.fit(X_train, y_train, batch_size=32, epochs=10, validation_data=(X_test, y_test))
+history = resnet_model.fit(X_train, y_train, batch_size=32, epochs=10, validation_data=(X_test, y_test), callbacks=[])
 
 # Predictions
 y_pred = resnet_model.predict(X_test)
