@@ -66,7 +66,7 @@ resnet_model.add(Dense(512, activation='relu'))
 resnet_model.add(Dense(labels.shape[1], activation='softmax'))
 
 # Freeze the pre-trained layers
-resnet_model.layers[0].trainable = False
+resnet_model.layers[1].trainable = False
 
 # Compile model
 resnet_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy', F1Score()])
