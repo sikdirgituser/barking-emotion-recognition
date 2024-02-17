@@ -31,8 +31,8 @@ If you need other packages, make sure to add them to the requirements.txt file w
 
 ### modelling
 
-- _model_playfulness.py_: first approach of a model predicting if barking is playful or not.
-- ...
+- _model_resnet50.py_: Model that distinguishes between 5 emotions from dog barkings (playful, happy, despair, sad, aggressive). Based on ResNet-50.
+- _model_resnet50_simplified_categories.py_: Model distinguishing between 3 emomtion categories (sad, happy, aggressive). Based on ResNet-50.
 
 ### deployment
 
